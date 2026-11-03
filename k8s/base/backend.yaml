@@ -1,0 +1,82 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  namespace: plateful
+spec:
+  type: ClusterIP
+  selector:
+    app: backend
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: plateful
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+        - name: backend
+          # Built on the host and loaded with `minikube image load`; the tag does not exist in any registry.
+          image: plateful-backend:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8000
+          # Every key of both objects becomes an environment variable.
+          envFrom:
+            - configMapRef:
+                name: plateful-config
+            - secretRef:
+                name: plateful-secrets
+          # When a pod is stopped, the Ingress keeps sending it requests for a second or two
+          # until the endpoint removal reaches it. Keep serving for a few seconds first, so
+          # gunicorn does not close its port while requests are still arriving.
+          lifecycle:
+            preStop:
+              exec:
+                command: ["sleep", "5"]
+          # Django rejects any Host header that is not in ALLOWED_HOSTS, and kubelet
+          # would otherwise send the pod IP, so both probes send the Ingress host.
+          livenessProbe:
+            httpGet:
+              path: /api/health/live/
+              port: 8000
+              httpHeaders:
+                - name: Host
+                  value: plateful.local
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            timeoutSeconds: 3
+            failureThreshold: 6
+          readinessProbe:
+            httpGet:
+              path: /api/health/ready/
+              port: 8000
+              httpHeaders:
+                - name: Host
+                  value: plateful.local
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              memory: 512Mi
+          securityContext:
+            # The image runs as uid 10001; this makes the kubelet refuse to start it as root.
+            runAsNonRoot: true

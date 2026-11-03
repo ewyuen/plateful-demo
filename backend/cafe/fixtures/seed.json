@@ -1,0 +1,783 @@
+[
+{
+  "model": "cafe.restaurant",
+  "pk": 1,
+  "fields": {
+    "name": "Corner Kitchen",
+    "address": "1 Main St",
+    "cuisine": "Chinese",
+    "description": "Chinese classics, wok-fried to order.",
+    "image_url": "",
+    "offers_delivery": true,
+    "delivery_fee": "3.00"
+  }
+},
+{
+  "model": "cafe.restaurant",
+  "pk": 2,
+  "fields": {
+    "name": "Corner Kitchen East",
+    "address": "1896 Wayne Circle",
+    "cuisine": "Chinese",
+    "description": "Our newest kitchen. The menu is coming soon.",
+    "image_url": "",
+    "offers_delivery": false,
+    "delivery_fee": "0.00"
+  }
+},
+{
+  "model": "cafe.restaurant",
+  "pk": 3,
+  "fields": {
+    "name": "Noodle Bar",
+    "address": "2 Side St.",
+    "cuisine": "Noodles",
+    "description": "Hand-pulled noodles and slow broths.",
+    "image_url": "",
+    "offers_delivery": false,
+    "delivery_fee": "0.00"
+  }
+},
+{
+  "model": "cafe.restaurant",
+  "pk": 4,
+  "fields": {
+    "name": "Golden Wok",
+    "address": "48 Harbour Road",
+    "cuisine": "Cantonese",
+    "description": "Cantonese roasts and wok dishes.",
+    "image_url": "",
+    "offers_delivery": true,
+    "delivery_fee": "2.50"
+  }
+},
+{
+  "model": "cafe.restaurant",
+  "pk": 5,
+  "fields": {
+    "name": "Jade Garden",
+    "address": "9 Garden Row",
+    "cuisine": "Dim sum",
+    "description": "Steamed and fried dim sum, made each morning.",
+    "image_url": "",
+    "offers_delivery": true,
+    "delivery_fee": "3.50"
+  }
+},
+{
+  "model": "cafe.restaurant",
+  "pk": 6,
+  "fields": {
+    "name": "Spice Lane",
+    "address": "21 Lantern Way",
+    "cuisine": "Sichuan",
+    "description": "Sichuan heat with numbing pepper.",
+    "image_url": "",
+    "offers_delivery": true,
+    "delivery_fee": "3.00"
+  }
+},
+{
+  "model": "cafe.restaurant",
+  "pk": 7,
+  "fields": {
+    "name": "Tea House",
+    "address": "3 Pearl Street",
+    "cuisine": "Caf\u00e9",
+    "description": "Teas, bubble tea and small pastries.",
+    "image_url": "",
+    "offers_delivery": false,
+    "delivery_fee": "0.00"
+  }
+},
+{
+  "model": "cafe.menucategory",
+  "pk": 1,
+  "fields": {
+    "restaurant": 1,
+    "name": "Appetizers",
+    "position": 1
+  }
+},
+{
+  "model": "cafe.menucategory",
+  "pk": 2,
+  "fields": {
+    "restaurant": 1,
+    "name": "Soups",
+    "position": 2
+  }
+},
+{
+  "model": "cafe.menucategory",
+  "pk": 3,
+  "fields": {
+    "restaurant": 1,
+    "name": "Main course",
+    "position": 3
+  }
+},
+{
+  "model": "cafe.menucategory",
+  "pk": 4,
+  "fields": {
+    "restaurant": 1,
+    "name": "Drinks",
+    "position": 4
+  }
+},
+{
+  "model": "cafe.menucategory",
+  "pk": 5,
+  "fields": {
+    "restaurant": 3,
+    "name": "Noodles",
+    "position": 1
+  }
+},
+{
+  "model": "cafe.menucategory",
+  "pk": 6,
+  "fields": {
+    "restaurant": 3,
+    "name": "Sides",
+    "position": 2
+  }
+},
+{
+  "model": "cafe.menucategory",
+  "pk": 7,
+  "fields": {
+    "restaurant": 3,
+    "name": "Soups",
+    "position": 3
+  }
+},
+{
+  "model": "cafe.menucategory",
+  "pk": 8,
+  "fields": {
+    "restaurant": 4,
+    "name": "Appetizers",
+    "position": 1
+  }
+},
+{
+  "model": "cafe.menucategory",
+  "pk": 9,
+  "fields": {
+    "restaurant": 4,
+    "name": "Main course",
+    "position": 2
+  }
+},
+{
+  "model": "cafe.menucategory",
+  "pk": 10,
+  "fields": {
+    "restaurant": 4,
+    "name": "Rice and noodles",
+    "position": 3
+  }
+},
+{
+  "model": "cafe.menucategory",
+  "pk": 11,
+  "fields": {
+    "restaurant": 4,
+    "name": "Desserts",
+    "position": 4
+  }
+},
+{
+  "model": "cafe.menucategory",
+  "pk": 12,
+  "fields": {
+    "restaurant": 5,
+    "name": "Steamed",
+    "position": 1
+  }
+},
+{
+  "model": "cafe.menucategory",
+  "pk": 13,
+  "fields": {
+    "restaurant": 5,
+    "name": "Fried",
+    "position": 2
+  }
+},
+{
+  "model": "cafe.menucategory",
+  "pk": 14,
+  "fields": {
+    "restaurant": 5,
+    "name": "Sweets",
+    "position": 3
+  }
+},
+{
+  "model": "cafe.menucategory",
+  "pk": 15,
+  "fields": {
+    "restaurant": 6,
+    "name": "Starters",
+    "position": 1
+  }
+},
+{
+  "model": "cafe.menucategory",
+  "pk": 16,
+  "fields": {
+    "restaurant": 6,
+    "name": "Main course",
+    "position": 2
+  }
+},
+{
+  "model": "cafe.menucategory",
+  "pk": 17,
+  "fields": {
+    "restaurant": 7,
+    "name": "Tea",
+    "position": 1
+  }
+},
+{
+  "model": "cafe.menucategory",
+  "pk": 18,
+  "fields": {
+    "restaurant": 7,
+    "name": "Pastries",
+    "position": 2
+  }
+},
+{
+  "model": "cafe.menuitem",
+  "pk": 1,
+  "fields": {
+    "restaurant": 1,
+    "category": 3,
+    "name": "Noodles",
+    "description": "Wok-fried noodles with vegetables",
+    "price": "9.99",
+    "is_available": true
+  }
+},
+{
+  "model": "cafe.menuitem",
+  "pk": 2,
+  "fields": {
+    "restaurant": 1,
+    "category": 4,
+    "name": "Coffee",
+    "description": "Arabia Blend",
+    "price": "5.00",
+    "is_available": true
+  }
+},
+{
+  "model": "cafe.menuitem",
+  "pk": 4,
+  "fields": {
+    "restaurant": 3,
+    "category": 5,
+    "name": "Ramen",
+    "description": "Pork broth, egg and spring onion",
+    "price": "12.50",
+    "is_available": true
+  }
+},
+{
+  "model": "cafe.menuitem",
+  "pk": 5,
+  "fields": {
+    "restaurant": 3,
+    "category": 6,
+    "name": "Dumplings",
+    "description": "Pan-fried pork dumplings",
+    "price": "6.00",
+    "is_available": true
+  }
+},
+{
+  "model": "cafe.menuitem",
+  "pk": 6,
+  "fields": {
+    "restaurant": 3,
+    "category": 7,
+    "name": "Seasonal Soup",
+    "description": "Changes with the market",
+    "price": "8.00",
+    "is_available": false
+  }
+},
+{
+  "model": "cafe.menuitem",
+  "pk": 10,
+  "fields": {
+    "restaurant": 1,
+    "category": 1,
+    "name": "Spring Rolls",
+    "description": "Crisp rolls with vegetables and sweet chilli",
+    "price": "6.50",
+    "is_available": true
+  }
+},
+{
+  "model": "cafe.menuitem",
+  "pk": 11,
+  "fields": {
+    "restaurant": 1,
+    "category": 1,
+    "name": "Pot Stickers",
+    "description": "Pan-fried pork dumplings",
+    "price": "7.50",
+    "is_available": true
+  }
+},
+{
+  "model": "cafe.menuitem",
+  "pk": 12,
+  "fields": {
+    "restaurant": 1,
+    "category": 1,
+    "name": "Crispy Wontons",
+    "description": "Fried wontons with plum sauce",
+    "price": "6.00",
+    "is_available": true
+  }
+},
+{
+  "model": "cafe.menuitem",
+  "pk": 13,
+  "fields": {
+    "restaurant": 1,
+    "category": 2,
+    "name": "Miso Soup",
+    "description": "Light broth with tofu and seaweed",
+    "price": "4.00",
+    "is_available": true
+  }
+},
+{
+  "model": "cafe.menuitem",
+  "pk": 14,
+  "fields": {
+    "restaurant": 1,
+    "category": 2,
+    "name": "Hot and Sour Soup",
+    "description": "Pepper, tofu and bamboo",
+    "price": "5.00",
+    "is_available": true
+  }
+},
+{
+  "model": "cafe.menuitem",
+  "pk": 15,
+  "fields": {
+    "restaurant": 1,
+    "category": 3,
+    "name": "Egg Fried Rice",
+    "description": "Wok-fried rice with egg and spring onion",
+    "price": "9.50",
+    "is_available": true
+  }
+},
+{
+  "model": "cafe.menuitem",
+  "pk": 16,
+  "fields": {
+    "restaurant": 1,
+    "category": 3,
+    "name": "Kung Pao Chicken",
+    "description": "Chicken, peanuts and dried chilli",
+    "price": "13.50",
+    "is_available": true
+  }
+},
+{
+  "model": "cafe.menuitem",
+  "pk": 17,
+  "fields": {
+    "restaurant": 1,
+    "category": 3,
+    "name": "Braised Tofu",
+    "description": "Tofu in a savoury mushroom sauce",
+    "price": "11.00",
+    "is_available": true
+  }
+},
+{
+  "model": "cafe.menuitem",
+  "pk": 18,
+  "fields": {
+    "restaurant": 1,
+    "category": null,
+    "name": "Chef's Special",
+    "description": "Ask what the kitchen made today",
+    "price": "14.00",
+    "is_available": true
+  }
+},
+{
+  "model": "cafe.menuitem",
+  "pk": 19,
+  "fields": {
+    "restaurant": 3,
+    "category": 5,
+    "name": "Beef Noodles",
+    "description": "Slow-cooked beef in a rich broth",
+    "price": "12.00",
+    "is_available": true
+  }
+},
+{
+  "model": "cafe.menuitem",
+  "pk": 20,
+  "fields": {
+    "restaurant": 3,
+    "category": 5,
+    "name": "Dan Dan Noodles",
+    "description": "Chilli oil, pork and sesame",
+    "price": "11.00",
+    "is_available": true
+  }
+},
+{
+  "model": "cafe.menuitem",
+  "pk": 21,
+  "fields": {
+    "restaurant": 3,
+    "category": 6,
+    "name": "Cucumber Salad",
+    "description": "Smashed cucumber, garlic and vinegar",
+    "price": "5.50",
+    "is_available": true
+  }
+},
+{
+  "model": "cafe.menuitem",
+  "pk": 22,
+  "fields": {
+    "restaurant": 3,
+    "category": 7,
+    "name": "Wonton Soup",
+    "description": "Pork wontons in clear broth",
+    "price": "7.00",
+    "is_available": true
+  }
+},
+{
+  "model": "cafe.menuitem",
+  "pk": 23,
+  "fields": {
+    "restaurant": 4,
+    "category": 8,
+    "name": "Salt and Pepper Squid",
+    "description": "Lightly fried with chilli and garlic",
+    "price": "9.00",
+    "is_available": true
+  }
+},
+{
+  "model": "cafe.menuitem",
+  "pk": 24,
+  "fields": {
+    "restaurant": 4,
+    "category": 8,
+    "name": "BBQ Pork Buns",
+    "description": "Soft buns filled with roast pork",
+    "price": "7.00",
+    "is_available": true
+  }
+},
+{
+  "model": "cafe.menuitem",
+  "pk": 25,
+  "fields": {
+    "restaurant": 4,
+    "category": 9,
+    "name": "Sweet and Sour Pork",
+    "description": "Crisp pork, pineapple and pepper",
+    "price": "13.00",
+    "is_available": true
+  }
+},
+{
+  "model": "cafe.menuitem",
+  "pk": 26,
+  "fields": {
+    "restaurant": 4,
+    "category": 9,
+    "name": "Black Bean Beef",
+    "description": "Beef in a savoury black bean sauce",
+    "price": "14.00",
+    "is_available": true
+  }
+},
+{
+  "model": "cafe.menuitem",
+  "pk": 27,
+  "fields": {
+    "restaurant": 4,
+    "category": 9,
+    "name": "Roast Duck",
+    "description": "Half a duck with plum sauce",
+    "price": "18.00",
+    "is_available": true
+  }
+},
+{
+  "model": "cafe.menuitem",
+  "pk": 28,
+  "fields": {
+    "restaurant": 4,
+    "category": 10,
+    "name": "Yangzhou Fried Rice",
+    "description": "Rice with prawns, egg and ham",
+    "price": "10.00",
+    "is_available": true
+  }
+},
+{
+  "model": "cafe.menuitem",
+  "pk": 29,
+  "fields": {
+    "restaurant": 4,
+    "category": 10,
+    "name": "Chow Mein",
+    "description": "Egg noodles with vegetables",
+    "price": "10.50",
+    "is_available": true
+  }
+},
+{
+  "model": "cafe.menuitem",
+  "pk": 30,
+  "fields": {
+    "restaurant": 4,
+    "category": 11,
+    "name": "Egg Tart",
+    "description": "Flaky pastry with egg custard",
+    "price": "4.50",
+    "is_available": true
+  }
+},
+{
+  "model": "cafe.menuitem",
+  "pk": 31,
+  "fields": {
+    "restaurant": 4,
+    "category": 11,
+    "name": "Mango Pudding",
+    "description": "Chilled mango pudding",
+    "price": "5.50",
+    "is_available": true
+  }
+},
+{
+  "model": "cafe.menuitem",
+  "pk": 32,
+  "fields": {
+    "restaurant": 5,
+    "category": 12,
+    "name": "Shrimp Dumplings",
+    "description": "Translucent wrappers, whole shrimp",
+    "price": "7.50",
+    "is_available": true
+  }
+},
+{
+  "model": "cafe.menuitem",
+  "pk": 33,
+  "fields": {
+    "restaurant": 5,
+    "category": 12,
+    "name": "Pork Siu Mai",
+    "description": "Open dumplings with pork and mushroom",
+    "price": "7.00",
+    "is_available": true
+  }
+},
+{
+  "model": "cafe.menuitem",
+  "pk": 34,
+  "fields": {
+    "restaurant": 5,
+    "category": 12,
+    "name": "Rice Rolls",
+    "description": "Silky rice sheets with a sweet soy sauce",
+    "price": "6.50",
+    "is_available": true
+  }
+},
+{
+  "model": "cafe.menuitem",
+  "pk": 35,
+  "fields": {
+    "restaurant": 5,
+    "category": 13,
+    "name": "Taro Puffs",
+    "description": "Crisp taro shells with savoury filling",
+    "price": "6.50",
+    "is_available": true
+  }
+},
+{
+  "model": "cafe.menuitem",
+  "pk": 36,
+  "fields": {
+    "restaurant": 5,
+    "category": 13,
+    "name": "Turnip Cake",
+    "description": "Pan-fried radish cake",
+    "price": "6.00",
+    "is_available": true
+  }
+},
+{
+  "model": "cafe.menuitem",
+  "pk": 37,
+  "fields": {
+    "restaurant": 5,
+    "category": 14,
+    "name": "Sesame Balls",
+    "description": "Chewy rice balls with sweet bean paste",
+    "price": "5.50",
+    "is_available": true
+  }
+},
+{
+  "model": "cafe.menuitem",
+  "pk": 38,
+  "fields": {
+    "restaurant": 5,
+    "category": 14,
+    "name": "Custard Buns",
+    "description": "Steamed buns with egg custard",
+    "price": "5.50",
+    "is_available": true
+  }
+},
+{
+  "model": "cafe.menuitem",
+  "pk": 39,
+  "fields": {
+    "restaurant": 6,
+    "category": 15,
+    "name": "Spicy Cucumber",
+    "description": "Cucumber with chilli oil",
+    "price": "5.50",
+    "is_available": true
+  }
+},
+{
+  "model": "cafe.menuitem",
+  "pk": 40,
+  "fields": {
+    "restaurant": 6,
+    "category": 15,
+    "name": "Chilli Oil Dumplings",
+    "description": "Pork dumplings in red chilli oil",
+    "price": "8.00",
+    "is_available": true
+  }
+},
+{
+  "model": "cafe.menuitem",
+  "pk": 41,
+  "fields": {
+    "restaurant": 6,
+    "category": 16,
+    "name": "Mapo Tofu",
+    "description": "Soft tofu, minced pork and Sichuan pepper",
+    "price": "12.00",
+    "is_available": true
+  }
+},
+{
+  "model": "cafe.menuitem",
+  "pk": 42,
+  "fields": {
+    "restaurant": 6,
+    "category": 16,
+    "name": "Dry-Fried Green Beans",
+    "description": "Blistered beans with preserved vegetable",
+    "price": "11.00",
+    "is_available": true
+  }
+},
+{
+  "model": "cafe.menuitem",
+  "pk": 43,
+  "fields": {
+    "restaurant": 6,
+    "category": 16,
+    "name": "Twice-Cooked Pork",
+    "description": "Sliced pork belly with leek and chilli",
+    "price": "14.00",
+    "is_available": true
+  }
+},
+{
+  "model": "cafe.menuitem",
+  "pk": 44,
+  "fields": {
+    "restaurant": 7,
+    "category": 17,
+    "name": "Jasmine Tea",
+    "description": "A pot of fragrant green tea",
+    "price": "3.50",
+    "is_available": true
+  }
+},
+{
+  "model": "cafe.menuitem",
+  "pk": 45,
+  "fields": {
+    "restaurant": 7,
+    "category": 17,
+    "name": "Oolong Tea",
+    "description": "A pot of roasted oolong",
+    "price": "4.00",
+    "is_available": true
+  }
+},
+{
+  "model": "cafe.menuitem",
+  "pk": 46,
+  "fields": {
+    "restaurant": 7,
+    "category": 17,
+    "name": "Bubble Tea",
+    "description": "Milk tea with tapioca pearls",
+    "price": "5.50",
+    "is_available": true
+  }
+},
+{
+  "model": "cafe.menuitem",
+  "pk": 47,
+  "fields": {
+    "restaurant": 7,
+    "category": 18,
+    "name": "Egg Tart",
+    "description": "Flaky pastry with egg custard",
+    "price": "3.50",
+    "is_available": true
+  }
+},
+{
+  "model": "cafe.menuitem",
+  "pk": 48,
+  "fields": {
+    "restaurant": 7,
+    "category": 18,
+    "name": "Almond Cookies",
+    "description": "Crumbly cookies, baked daily",
+    "price": "3.00",
+    "is_available": true
+  }
+}
+]

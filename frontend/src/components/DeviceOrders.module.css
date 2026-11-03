@@ -1,0 +1,38 @@
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.top button,
+.placeholder button {
+  min-height: var(--tap-size);
+  padding: 0 var(--space-4);
+  border: var(--border-line);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font: inherit;
+  cursor: pointer;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+}
+
+.placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border: var(--border-line);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  list-style: none;
+}

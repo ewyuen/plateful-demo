@@ -1,0 +1,35 @@
+# Runs once per image tag, before the backend rolls out. A Job's pod template cannot
+# be edited in place, so delete the finished Job before applying it with a new tag:
+#   kubectl -n plateful delete job backend-migrate
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: backend-migrate
+  namespace: plateful
+spec:
+  # Retry a few times (Postgres may still be starting), then give up and keep the failed pod for its logs.
+  backoffLimit: 3
+  template:
+    metadata:
+      labels:
+        app: backend-migrate
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: migrate
+          image: plateful-backend:latest
+          imagePullPolicy: IfNotPresent
+          command: ["python", "manage.py", "migrate"]
+          envFrom:
+            - configMapRef:
+                name: plateful-config
+            - secretRef:
+                name: plateful-secrets
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              memory: 256Mi
+          securityContext:
+            runAsNonRoot: true

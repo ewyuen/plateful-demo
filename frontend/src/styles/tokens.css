@@ -1,0 +1,53 @@
+/* Design tokens: the one place for colours, fonts, sizes and spacing (ADR-0010).
+   Component styles use var(--...) and never a literal colour. */
+:root {
+  /* Lacquer red, black and gold */
+  --color-bg: #fff8ec;
+  --color-surface: #ffffff;
+  --color-text: #1c1a1a;
+  --color-text-muted: #5e5750;
+  --color-primary: #b3202a;
+  --color-primary-dark: #8f1a22;
+  --color-on-primary: #fff8ec;
+  --color-gold: #c9a227; /* borders and decoration only, never text */
+  --color-gold-text: #7d6410;
+  --color-line: #e6d6b0;
+  --color-bubble-user: #f3e9d2;
+  --color-bubble-assistant: #fff8ec;
+  --color-success: #1e6b3a;
+  --color-error: #9b1c1c;
+  --color-ink: #1c1a1a;
+  --color-on-ink: #efe6d2;
+
+  --overlay: rgb(28 26 26 / 55%);
+  --scrim: linear-gradient(90deg, rgb(28 26 26 / 88%), rgb(28 26 26 / 35%) 70%, rgb(28 26 26 / 10%));
+  --gradient-hero: linear-gradient(120deg, #1c1a1a, #b3202a 60%, #c9a227);
+
+  --font-heading: Georgia, 'Iowan Old Style', 'Palatino Linotype', serif;
+  --font-body: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.25rem;
+  --text-xl: 1.625rem;
+  --text-2xl: 2rem;
+  --text-hero: clamp(1.5rem, 1rem + 2.5vw, 3.25rem);
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --border-gold: 3px solid var(--color-gold);
+  --border-line: 1px solid var(--color-line);
+  --shadow-card: 0 1px 3px rgb(28 26 26 / 12%);
+
+  --tap-size: 2.75rem; /* 44px */
+  --page-width: 72rem;
+  --focus-ring: 3px solid var(--color-primary);
+}

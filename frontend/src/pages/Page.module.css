@@ -1,0 +1,22 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  max-width: var(--page-width);
+  margin: 0 auto;
+  padding: var(--space-5) var(--space-4) var(--space-7);
+}
+
+.notice {
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border: 2px solid var(--color-success);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-success);
+  font-weight: 600;
+}
+
+.narrow {
+  max-width: 44rem;
+}

@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: plateful-config
+  namespace: plateful
+data:
+  POSTGRES_DB: plateful
+  # The headless Service in postgres.yaml; resolves inside the namespace.
+  POSTGRES_HOST: postgres
+  POSTGRES_PORT: "5432"
+  # Local names so port-forward and exec checks work. Each overlay adds the host the browser uses.
+  DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1
+  # Same-origin behind Ingress, so no cross-origin access is allowed in the cluster.
+  CORS_ALLOWED_ORIGINS: ""
+  # PayPal sandbox client ID (public by design). Leave empty until you have one: the
+  # payment endpoints then answer 503 and the rest of the API works. The matching
+  # client secret goes in the Secret, never here.
+  PAYPAL_CLIENT_ID: ""
+  # Claude menu assistant. The model and the per-client rate limit are not secret. The
+  # API key (ANTHROPIC_API_KEY) goes in the Secret; without it the assistant answers 503
+  # and the rest of the API works.
+  ASSISTANT_MODEL: claude-haiku-5-5
+  ASSISTANT_RATE: 20/min
+  # Staff login (ADR-0014). The page and the API share one origin through the Ingress, so the
+  # CSRF check trusts that origin (set by each overlay). NUM_PROXIES is the Ingress: with it, rate
+  # limits count the real client and not the Ingress pod. Cookies are Secure only over HTTPS; the
+  # local cluster and the AWS demo are http. With TLS set DJANGO_SECURE_COOKIES and
+  # DJANGO_BEHIND_TLS_PROXY to "true", and CSRF_TRUSTED_ORIGINS to the https address.
+  CSRF_TRUSTED_ORIGINS: ""
+  NUM_PROXIES: "1"
+  DJANGO_SECURE_COOKIES: "false"
+  DJANGO_BEHIND_TLS_PROXY: "false"

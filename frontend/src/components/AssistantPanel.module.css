@@ -1,0 +1,60 @@
+/* The button floats above the cart bar on a phone; the panel covers the width on a phone
+   and a slice of the right side on a wide screen. */
+.opener {
+  position: fixed;
+  right: var(--space-4);
+  bottom: 4.75rem;
+  z-index: 15;
+  min-height: 3rem;
+  padding: 0 var(--space-4);
+  border-color: var(--color-ink);
+  border-radius: 999px;
+  background: var(--color-ink);
+  color: var(--color-on-ink);
+  box-shadow: var(--shadow-card);
+}
+
+.opener:hover:not(:disabled) {
+  background: var(--color-primary-dark);
+}
+
+.panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 25;
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  overflow-y: auto;
+  background: var(--color-surface);
+  box-shadow: -4px 0 12px var(--overlay);
+}
+
+.panel[hidden] {
+  display: none;
+}
+
+.close {
+  align-self: flex-end;
+  border-color: var(--color-gold-text);
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.close:hover:not(:disabled) {
+  background: var(--color-bubble-user);
+}
+
+@media (min-width: 48rem) {
+  .opener {
+    bottom: var(--space-5);
+  }
+
+  .panel {
+    max-width: 26rem;
+  }
+}

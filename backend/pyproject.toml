@@ -1,0 +1,33 @@
+[project]
+name = "plateful-backend"
+version = "0.1.0"
+description = "Plateful ordering API"
+requires-python = ">=3.14"
+dependencies = [
+    "anthropic>=2.3.0",
+    "django>=6.1.2",
+    "django-cors-headers>=4.9.0",
+    "djangorestframework>=3.18.3",
+    "gunicorn>=26.2.0",
+    "httpx>=0.28.1",
+    "psycopg[binary]>=3.3.6",
+    "whitenoise>=6.12.0",
+]
+
+[tool.uv]
+package = false
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+    "pytest-django>=4.14.0",
+    "pytest-env>=1.8.3",
+]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings"
+python_files = ["test_*.py"]
+addopts = "-ra"
+env = ["DJANGO_SECRET_KEY=test-only-key"]
+# WhiteNoise warns when `collectstatic` has not run, which is true on a developer machine.
+filterwarnings = ["ignore:No directory at:UserWarning"]

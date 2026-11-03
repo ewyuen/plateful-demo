@@ -1,0 +1,44 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: plateful
+  namespace: plateful
+spec:
+  ingressClassName: nginx
+  rules:
+    # One host serves both the page and the API, so the browser sees one origin and CORS never applies.
+    # The host name is set by each overlay (local: plateful.local); on AWS none is set, so the load
+    # balancer's own address matches.
+    - http:
+        paths:
+          # No rewrite annotation: the backend already serves its routes under /api/.
+          # nginx picks the longest matching prefix, so /api/... never reaches the catch-all below.
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: backend
+                port:
+                  number: 8000
+          # The Django admin (the admin role only) and the CSS and scripts it loads.
+          - path: /admin
+            pathType: Prefix
+            backend:
+              service:
+                name: backend
+                port:
+                  number: 8000
+          - path: /static
+            pathType: Prefix
+            backend:
+              service:
+                name: backend
+                port:
+                  number: 8000
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend
+                port:
+                  number: 80

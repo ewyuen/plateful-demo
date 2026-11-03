@@ -1,0 +1,25 @@
+# minikube (profile plateful). Images are the ones built on this machine and loaded into the node;
+# scripts/plateful sets their tag. The host name is plateful.local (an /etc/hosts line points it at
+# the minikube IP).
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../base
+patches:
+  - target:
+      kind: ConfigMap
+      name: plateful-config
+    patch: |-
+      - op: replace
+        path: /data/DJANGO_ALLOWED_HOSTS
+        value: plateful.local,localhost,127.0.0.1
+      - op: replace
+        path: /data/CSRF_TRUSTED_ORIGINS
+        value: http://plateful.local
+  - target:
+      kind: Ingress
+      name: plateful
+    patch: |-
+      - op: add
+        path: /spec/rules/0/host
+        value: plateful.local

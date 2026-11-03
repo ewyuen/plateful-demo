@@ -1,0 +1,275 @@
+#!/usr/bin/env bash
+# One command line for both deploy modes (ADR-0017).
+#
+#   scripts/plateful deploy  local     build, load, apply and seed on minikube (profile plateful)
+#   scripts/plateful delete  local     delete the minikube profile and the plateful-* images on this machine
+#   scripts/plateful status  local     what is running
+#   scripts/plateful check             render every overlay and look for mistakes (no cluster needed)
+#
+# The aws mode is planned and not built yet.
+#
+# Things that went wrong by hand before, so this script does them every time:
+#  1. The frontend image has the PayPal client id built in (Vite reads it at build time). Without it
+#     the page cannot pay. The script refuses to run without it and, at the end, checks that the
+#     served page really contains it. The backend needs the same id (PAYPAL_CLIENT_ID in the
+#     ConfigMap, "" in git): it is put in the rendered overlay, before any pod starts, and then
+#     checked inside every backend pod.
+#  2. `minikube image load` does not replace an image of the same tag that is in use, so a ":latest"
+#     rebuild silently keeps the old image. Each run uses a new, unique tag, and that one tag is set
+#     on every workload that runs a built image (the Deployments, the migrate Job and the purge
+#     CronJob) by kustomize, not by editing files. `check` fails if any image is left on ":latest".
+#  3. A second minikube cluster can exist, so every command names the profile and the kubectl
+#     context explicitly (default `plateful`, override with MINIKUBE_PROFILE).
+set -euo pipefail
+
+cd "$(dirname "$0")/.."
+NS=plateful
+PROFILE=${MINIKUBE_PROFILE:-plateful}
+HOST=${DEPLOY_HOST:-plateful.local}
+BUILD_DIR=k8s/.build
+
+usage() {
+  sed -n '2,8p' "$0" | sed 's/^# \{0,1\}//' >&2
+  exit 2
+}
+
+die() { echo "$*" >&2; exit 1; }
+kc() { kubectl --context "$PROFILE" "$@"; }
+
+# ---- shared by every mode ---------------------------------------------------------------------
+
+# envval KEY FILE: the value of KEY in a KEY=VALUE file (empty if the file or the key is missing).
+# The file is read as text, never run, and values are never printed.
+envval() {
+  [ -f "$2" ] || return 0
+  grep -E "^$1=" "$2" | tail -1 | cut -d= -f2- | sed -E 's/^"(.*)"$/\1/' || true
+}
+
+# The PayPal client id: .env (the file Docker Compose uses) first, then the frontend's own .env.
+paypal_id() {
+  local id
+  id=$(envval PAYPAL_CLIENT_ID .env)
+  [ -n "$id" ] || id=$(envval VITE_PAYPAL_CLIENT_ID frontend/.env)
+  echo "$id"
+}
+
+# render_overlay MODE TAG [PAYPAL_ID]: writes the overlay plus the image tag and the PayPal client id
+# of this deploy to k8s/.build/MODE and prints that directory. One `images:` entry per image reaches
+# every workload that uses it. The id is public by design and "" in git; it is set here so it is in
+# the ConfigMap before any pod starts, because pods read their ConfigMap only when they start.
+render_overlay() {
+  local mode=$1 tag=$2 paypal=${3:-} dir="$BUILD_DIR/$1"
+  mkdir -p "$dir"
+  cat > "$dir/kustomization.yaml" <<EOF
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../overlays/$mode
+images:
+  - name: plateful-backend
+    newTag: "$tag"
+  - name: plateful-frontend
+    newTag: "$tag"
+patches:
+  - target:
+      kind: ConfigMap
+      name: plateful-config
+    patch: |-
+      - op: replace
+        path: /data/PAYPAL_CLIENT_ID
+        value: "$paypal"
+EOF
+  echo "$dir"
+}
+
+# The Secret comes from .env, never from a file in git. The database password must not change on a
+# cluster whose database already exists (Postgres keeps the one it was created with), so an existing
+# Secret keeps its POSTGRES_PASSWORD. Without a .env, an existing Secret is left as it is.
+make_secret() {
+  local existing=0
+  kc -n "$NS" get secret plateful-secrets >/dev/null 2>&1 && existing=1
+  if [ ! -f .env ]; then
+    [ "$existing" = 1 ] || die "No .env and no Secret on the cluster. Copy .env.example to .env and fill it in."
+    echo "No .env: keeping the Secret that is already on the cluster."
+    return 0
+  fi
+  local pg key paypal anthropic
+  pg=""
+  [ "$existing" = 1 ] && pg=$(kc -n "$NS" get secret plateful-secrets -o jsonpath='{.data.POSTGRES_PASSWORD}' | base64 -d)
+  [ -n "$pg" ] || pg=$(envval POSTGRES_PASSWORD .env)
+  key=$(envval DJANGO_SECRET_KEY .env)
+  paypal=$(envval PAYPAL_CLIENT_SECRET .env)
+  anthropic=$(envval ANTHROPIC_API_KEY .env)
+  [ -n "$pg" ] && [ -n "$key" ] || die ".env needs POSTGRES_PASSWORD and DJANGO_SECRET_KEY."
+  kc -n "$NS" create secret generic plateful-secrets \
+    --from-literal=POSTGRES_USER=plateful \
+    --from-literal=POSTGRES_PASSWORD="$pg" \
+    --from-literal=DJANGO_SECRET_KEY="$key" \
+    --from-literal=PAYPAL_CLIENT_SECRET="$paypal" \
+    --from-literal=ANTHROPIC_API_KEY="$anthropic" \
+    --dry-run=client -o yaml | kc apply -f - >/dev/null
+  echo "Secret plateful-secrets applied."
+}
+
+# apply_phases DIR: apply the rendered overlay in the order a first deploy needs. Postgres must be
+# ready before the migrate Job, and the Job must finish before the backend serves.
+apply_phases() {
+  local dir=$1 rendered
+  rendered=$(mktemp)
+  kubectl kustomize "$dir" > "$rendered"
+  # Phase 1: everything except the Job and the Deployments.
+  kubectl apply --dry-run=client -o json -f "$rendered" \
+    | jq '{apiVersion:"v1",kind:"List",items:[.items[]|select(.kind!="Job" and .kind!="Deployment")]}' \
+    | kc apply -f -
+  kc -n "$NS" rollout status statefulset/postgres --timeout=180s
+  # Phase 2: a Job cannot be changed, so a new one replaces the old.
+  kc -n "$NS" delete job backend-migrate --ignore-not-found
+  kubectl apply --dry-run=client -o json -f "$rendered" \
+    | jq '{apiVersion:"v1",kind:"List",items:[.items[]|select(.kind=="Job")]}' \
+    | kc apply -f -
+  kc -n "$NS" wait --for=condition=complete job/backend-migrate --timeout=180s
+  # Phase 3: the Deployments.
+  kubectl apply --dry-run=client -o json -f "$rendered" \
+    | jq '{apiVersion:"v1",kind:"List",items:[.items[]|select(.kind=="Deployment")]}' \
+    | kc apply -f -
+  kc -n "$NS" rollout status deployment/backend --timeout=180s
+  kc -n "$NS" rollout status deployment/frontend --timeout=180s
+  rm -f "$rendered"
+}
+
+# check_paypal ID: the ConfigMap, the Secret and every running backend pod must have the payment keys.
+# The pods are asked directly: a ConfigMap that is right does not help a pod that started before it
+# was right (that is how a deploy once passed this check and then answered 503 on every payment).
+check_paypal() {
+  local cm len pod n=0
+  cm=$(kc -n "$NS" get configmap plateful-config -o jsonpath='{.data.PAYPAL_CLIENT_ID}')
+  [ "$cm" = "$1" ] || die "FAIL: the ConfigMap has no PAYPAL_CLIENT_ID."
+  len=$(kc -n "$NS" get secret plateful-secrets -o jsonpath='{.data.PAYPAL_CLIENT_SECRET}' | base64 -d | wc -c)
+  [ "$len" -gt 0 ] || die "FAIL: the Secret has no PAYPAL_CLIENT_SECRET."
+  # Pods that are shutting down after the rollout are still listed for a moment; skip them.
+  for pod in $(kc -n "$NS" get pods -l app=backend -o json | jq -r '.items[] | select(.metadata.deletionTimestamp == null) | .metadata.name'); do
+    n=$((n + 1))
+    kc -n "$NS" exec "pod/$pod" -- sh -c 'test -n "$PAYPAL_CLIENT_ID" && test -n "$PAYPAL_CLIENT_SECRET"' \
+      || die "FAIL: pod/$pod runs without PAYPAL_CLIENT_ID or PAYPAL_CLIENT_SECRET."
+  done
+  [ "$n" -gt 0 ] || die "FAIL: no backend pod found."
+  echo "OK: the ConfigMap, the Secret and $n backend pod(s) have the payment keys."
+}
+
+# seed: starter restaurants (safe to repeat) and the demo users (existing users are left alone; the
+# passwords of new ones are printed once, here, and nowhere else).
+seed() {
+  kc -n "$NS" exec deploy/backend -- python manage.py loaddata seed
+  kc -n "$NS" exec deploy/backend -- python manage.py seed_demo_users
+}
+
+# ---- local mode -------------------------------------------------------------------------------
+
+ensure_profile() {
+  if minikube profile list -o json 2>/dev/null | jq -e --arg p "$PROFILE" '.valid[]?|select(.Name==$p)' >/dev/null; then
+    minikube -p "$PROFILE" status >/dev/null 2>&1 || minikube start -p "$PROFILE"
+  else
+    echo "== Creating the minikube profile $PROFILE"
+    minikube start -p "$PROFILE"
+  fi
+  minikube -p "$PROFILE" addons enable ingress >/dev/null
+  kc -n ingress-nginx wait --for=condition=ready pod -l app.kubernetes.io/component=controller --timeout=300s >/dev/null
+}
+
+deploy_local() {
+  local paypal tag dir ip bundle
+  paypal=$(paypal_id)
+  [ -n "$paypal" ] || die "No PayPal client id: set PAYPAL_CLIENT_ID in .env (or VITE_PAYPAL_CLIENT_ID in frontend/.env); the page would not be able to pay."
+  tag="$(git rev-parse --short HEAD)-$(date +%s)"
+
+  ensure_profile
+  echo "== Building plateful-backend:$tag and plateful-frontend:$tag"
+  docker build -q -t "plateful-backend:$tag" backend/
+  docker build -q -t "plateful-frontend:$tag" --build-arg "VITE_PAYPAL_CLIENT_ID=$paypal" frontend/
+  minikube -p "$PROFILE" image load "plateful-backend:$tag"
+  minikube -p "$PROFILE" image load "plateful-frontend:$tag"
+
+  echo "== Applying"
+  # `apply`, not `create`, so the later apply of the same Namespace has nothing to warn about.
+  kc create namespace "$NS" --dry-run=client -o yaml | kc apply -f - >/dev/null
+  make_secret
+  dir=$(render_overlay local "$tag" "$paypal")
+  apply_phases "$dir"
+
+  echo "== Checking the backend configuration"
+  check_paypal "$paypal"
+
+  echo "== Seeding"
+  seed
+
+  # --resolve reaches the Ingress without an /etc/hosts line, so the check works on a new machine.
+  ip=$(minikube -p "$PROFILE" ip)
+  site() { curl -fsS --resolve "$HOST:80:$ip" "$@"; }
+  echo "== Checking what is served at http://$HOST"
+  site "http://$HOST/api/health/ready/" >/dev/null
+  bundle=$(site "http://$HOST/" | grep -o '/assets/index-[^"]*\.js' | head -1)
+  if site "http://$HOST$bundle" | grep -q "$paypal"; then
+    echo "OK: the served page has the PayPal client id built in ($bundle)."
+  else
+    die "FAIL: the served page does not contain the PayPal client id."
+  fi
+  echo "Deployed tag $tag. If $HOST does not open, add: echo \"$ip $HOST\" | sudo tee -a /etc/hosts"
+}
+
+# Delete means delete everything: the cluster (with its database and loaded images) and the images
+# built on this machine. Other minikube profiles, other images and /etc/hosts are not touched.
+delete_local() {
+  echo "== Deleting the minikube profile $PROFILE"
+  minikube delete -p "$PROFILE"
+  echo "== Removing plateful-* images from this machine's Docker"
+  local ids
+  ids=$(docker images --format '{{.Repository}} {{.ID}}' | awk '$1=="plateful-backend"||$1=="plateful-frontend"{print $2}' | sort -u)
+  # shellcheck disable=SC2086
+  [ -z "$ids" ] || docker rmi -f $ids
+  docker image prune -f >/dev/null
+  rm -rf "$BUILD_DIR"
+  echo "Done: no $PROFILE profile and no plateful-* image remains."
+}
+
+status_local() {
+  minikube profile list 2>/dev/null | grep -E "PROFILE|$PROFILE" || echo "No minikube profile $PROFILE."
+  kc -n "$NS" get pods,jobs,cronjob 2>&1 | head -20 || true
+  docker images --format '{{.Repository}}:{{.Tag}}' | grep '^plateful-' || echo "No plateful-* images on this machine."
+}
+
+# ---- the check: no cluster needed -------------------------------------------------------------
+
+# Every overlay must render; no image may stay on "latest" (a workload an overlay forgot); the
+# namespace must be there; and no Secret may be rendered (Secrets are made from .env, never in git).
+check() {
+  local failed=0 mode out bad dir
+  for dir in k8s/overlays/*/; do
+    mode=$(basename "$dir")
+    bad=0
+    out=$(kubectl kustomize "$(render_overlay "$mode" check)") || { echo "FAIL: overlay $mode does not render."; failed=1; continue; }
+    if echo "$out" | grep -E "image: .*:latest" >/dev/null; then
+      echo "FAIL: overlay $mode has an image on :latest:"; echo "$out" | grep -E "image: .*:latest"; bad=1
+    fi
+    echo "$out" | grep -q "^kind: Namespace" || { echo "FAIL: overlay $mode has no Namespace."; bad=1; }
+    if echo "$out" | grep -q "^kind: Secret"; then echo "FAIL: overlay $mode renders a Secret."; bad=1; fi
+    [ "$bad" = 0 ] && echo "OK: overlay $mode renders, every built image has a tag, no Secret."
+    [ "$bad" = 0 ] || failed=1
+  done
+  rm -rf "$BUILD_DIR"
+  return "$failed"
+}
+
+# ---- entry point ------------------------------------------------------------------------------
+
+ACTION=${1:-}
+MODE=${2:-}
+case "$ACTION" in
+  check) check ;;
+  deploy|delete|status)
+    case "$MODE" in
+      local) "${ACTION}_local" ;;
+      aws) die "The aws mode is not built yet." ;;
+      *) usage ;;
+    esac ;;
+  *) usage ;;
+esac

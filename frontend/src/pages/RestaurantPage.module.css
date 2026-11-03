@@ -1,0 +1,102 @@
+.page {
+  max-width: var(--page-width);
+  margin: 0 auto;
+  padding: var(--space-5) var(--space-4) var(--space-7);
+}
+
+.banner {
+  position: relative;
+  min-height: 7rem;
+  background: var(--color-ink);
+  color: var(--color-on-ink);
+}
+
+.photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.bannerText {
+  position: relative;
+  display: flex;
+  min-height: inherit;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: var(--space-1);
+  padding: var(--space-3) max(var(--space-4), calc((100% - var(--page-width)) / 2 + var(--space-4)));
+  background: var(--scrim);
+}
+
+.back {
+  color: var(--color-on-ink);
+  font-size: var(--text-sm);
+}
+
+.back:focus-visible {
+  outline-color: var(--color-on-ink);
+}
+
+.title {
+  color: var(--color-on-ink);
+  font-size: var(--text-2xl);
+}
+
+.meta {
+  margin: 0;
+  font-size: var(--text-sm);
+}
+
+/* Room for the cart bar fixed to the bottom of a phone. */
+.layout {
+  display: flex;
+  max-width: var(--page-width);
+  flex-direction: column;
+  gap: var(--space-5);
+  margin: 0 auto;
+  padding: var(--space-4) var(--space-4) 6rem;
+}
+
+.menu {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.group {
+  scroll-margin-top: 4rem;
+}
+
+.group > h2 {
+  margin-bottom: var(--space-3);
+}
+
+.dishes {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (min-width: 40rem) {
+  .dishes {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 48rem) {
+  .banner {
+    min-height: 12rem;
+  }
+
+  .layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 20rem;
+    align-items: start;
+    padding-bottom: var(--space-7);
+  }
+}
