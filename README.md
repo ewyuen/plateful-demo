@@ -66,13 +66,13 @@ The quickest way to run the whole app on one machine: the database, the API, the
 
    The first build takes a couple of minutes. When the log settles, open **http://localhost:8080**.
 
-5. **Optional: demo staff, admin and customer logins.** A guest can browse, pay and look an order up without any account. To try the restaurant staff queue, the admin site and a customer account, create the demo users once (the passwords are random and printed once, in your terminal; nothing is stored in a file):
+5. **Optional: demo staff, admin and customer logins.** A guest can browse, pay and look an order up without any account. To try the restaurant staff queue, the admin site and a customer account, create the demo users once, all with the same password `Password1`:
 
    ```bash
-   docker compose exec backend python manage.py seed_demo_users
+   docker compose exec backend python manage.py seed_demo_users --password Password1
    ```
 
-   It creates `admin`, `demo-customer` and one `staff-<restaurant>` user per restaurant (for example `staff-corner-kitchen`). Running it again changes no password.
+   It creates `admin`, `demo-customer` and one `staff-<restaurant>` user per restaurant (for example `staff-corner-kitchen`), each with the password **`Password1`**. A fixed password is for this local demo only: without `--password` the command gives each user a random one, printed once. Running it again changes no existing password; to set them all to `Password1` again, add `--reset-passwords`.
 
 **Check that it works:**
 
@@ -94,7 +94,7 @@ The quickest way to run the whole app on one machine: the database, the API, the
 | "Payment is unavailable" | The PayPal keys are empty in `.env`. |
 | "The assistant is not available" | `ANTHROPIC_API_KEY` is empty, or the key is invalid. |
 | Signing in says it failed, or the browser shows "CSRF verification failed" | You opened the page at an address other than `http://localhost:8080` (or `127.0.0.1`). Compose trusts only the proxy's own port; if you set `PROXY_PORT`, use that port. |
-| The demo users do not exist (login fails with the right name) | Run step 5. The users are not created by default. |
+| The demo users do not exist, or `Password1` is refused | Run step 5. The users are not created by default; if they were created without `--password`, run it again with `--password Password1 --reset-passwords`. |
 | Starting over from nothing | `docker compose down -v`, then `docker compose up --build`. |
 
 
@@ -111,7 +111,7 @@ export PAYPAL_CLIENT_ID=... PAYPAL_CLIENT_SECRET=...   # your PayPal sandbox key
 export ANTHROPIC_API_KEY=...                           # optional: without it the assistant says it is unavailable
 env -u VIRTUAL_ENV uv run python manage.py migrate
 env -u VIRTUAL_ENV uv run python manage.py loaddata seed          # the demo restaurants and menus (safe to repeat)
-env -u VIRTUAL_ENV uv run python manage.py seed_demo_users        # optional: admin, staff and customer logins, passwords printed once
+env -u VIRTUAL_ENV uv run python manage.py seed_demo_users --password Password1   # optional: admin, staff and customer logins, all with Password1
 env -u VIRTUAL_ENV uv run python manage.py runserver
 ```
 
@@ -129,7 +129,7 @@ npm run dev
 The page calls the API directly at `VITE_API_URL` (default `http://localhost:8000/api`). The backend allows the origins `http://localhost:5173` and `http://127.0.0.1:5173`, so open the page at one of those. Vite reads `.env` when it starts, so restart `npm run dev` after changing it. Then follow the use cases below.
 ## Use cases
 
-Who does what, once it is running at http://localhost:8080. The demo accounts come from step 5 of the guide above (`seed_demo_users`); nobody needs an account to order.
+Who does what, once it is running at http://localhost:8080. The demo accounts come from step 5 of the guide above (`seed_demo_users --password Password1`), and **all of them use the password `Password1`**; nobody needs an account to order.
 
 | Who | Account | What they can do | What you should see |
 | --- | --- | --- | --- |

@@ -12,11 +12,17 @@ from cafe.roles import ADMIN, CUSTOMER, FULFILMENT
 class Command(BaseCommand):
     help = (
         "Create demo users: one fulfilment user for each restaurant, one admin and one customer, each with a "
-        "random password printed once. Existing users keep their password. For local and "
-        "sandbox demos; real staff are made in the Django admin."
+        "random password printed once, or all with the same password given by --password. Existing "
+        "users keep their password. For local and sandbox demos only; real staff are made in the "
+        "Django admin."
     )
 
     def add_arguments(self, parser):
+        parser.add_argument(
+            "--password",
+            help="Give every demo user this password instead of a random one (for a public demo "
+            "where the password is in the README; never use it on a real deployment).",
+        )
         parser.add_argument(
             "--reset-passwords",
             action="store_true",
@@ -31,7 +37,7 @@ class Command(BaseCommand):
         def make(username, group, **extra):
             user, is_new = User.objects.get_or_create(username=username, defaults=extra)
             if is_new or options["reset_passwords"]:
-                password = secrets.token_urlsafe(9)
+                password = options["password"] or secrets.token_urlsafe(9)
                 user.set_password(password)
                 user.is_active = True
                 for field, value in extra.items():
@@ -51,6 +57,9 @@ class Command(BaseCommand):
         if not created:
             self.stdout.write("Every demo user already exists; no password was changed.")
             return
-        self.stdout.write("Demo users (shown once, change them in the Django admin):")
+        if options["password"]:
+            self.stdout.write("Demo users (all with the password you gave):")
+        else:
+            self.stdout.write("Demo users (shown once, change them in the Django admin):")
         for username, password in created:
             self.stdout.write(f"  {username}  {password}")

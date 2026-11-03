@@ -447,6 +447,24 @@ def test_the_seed_creates_staff_for_each_restaurant_and_an_admin(restaurant, noo
     assert list(users.get(username="staff-noodle-bar").staffed_restaurants.all()) == [noodle_bar]
 
 
+def test_the_password_option_gives_every_demo_user_the_same_password(restaurant):
+    printed = passwords_in(run_seed("--password", "Password1"))
+
+    assert set(printed) == {"admin", "demo-customer", "staff-corner-kitchen"}
+    assert set(printed.values()) == {"Password1"}
+    users = get_user_model().objects
+    assert all(users.get(username=name).check_password("Password1") for name in printed)
+
+
+def test_the_password_option_changes_existing_users_only_with_reset(restaurant):
+    run_seed()
+    assert passwords_in(run_seed("--password", "Password1")) == {}
+
+    printed = passwords_in(run_seed("--password", "Password1", "--reset-passwords"))
+
+    assert set(printed.values()) == {"Password1"}
+
+
 def test_the_printed_passwords_work(restaurant):
     printed = passwords_in(run_seed())
     client = APIClient(enforce_csrf_checks=True)
