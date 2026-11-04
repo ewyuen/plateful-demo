@@ -8,9 +8,11 @@ Plateful is a marketplace of restaurants. A customer browses by cuisine, opens a
 
 **Try it in five minutes:** [Run it with Docker Compose](#run-it-docker-compose). You need Docker and your own free PayPal sandbox keys; a Claude key is optional.
 
-![Discover restaurants on a desktop](docs/screenshots/home-desktop.webp)
+![Discover restaurants on a desktop](docs/screenshots/1-home.png)
 
-![A restaurant's menu on a phone, with the cart bar](docs/screenshots/restaurant-phone.webp)
+![Asking the assistant for something light](docs/screenshots/3-assistant.png)
+
+![A restaurant's menu on a phone, with the cart bar](docs/screenshots/5-phone.png)
 
 ## What it does
 
