@@ -1,7 +1,7 @@
 import { Link, NavLink, Outlet } from 'react-router'
 import { cartCount } from '../cart'
 import { useAuth } from '../authContext'
-import { isCustomer, isStaff } from '../roles'
+import { isCustomer, isOwner, isStaff } from '../roles'
 import { useOrderDraft } from '../orderDraftContext'
 import CartNotice from './CartNotice'
 import Credits from './Credits'
@@ -30,6 +30,7 @@ function AppShell() {
             </NavLink>
             <NavLink to="/orders">Orders</NavLink>
             {staff && <NavLink to="/fulfilment">Fulfilment</NavLink>}
+            {isOwner(auth.user) && <NavLink to="/dashboard">Dashboard</NavLink>}
             {customer && <NavLink to="/my-orders">My orders</NavLink>}
             <NavLink to="/checkout" className={styles.cart}>
               Cart

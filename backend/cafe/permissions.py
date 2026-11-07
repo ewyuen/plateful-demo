@@ -1,6 +1,6 @@
 from rest_framework.permissions import BasePermission
 
-from .roles import CUSTOMER, STAFF_ROLES, role_of
+from .roles import CUSTOMER, OWNER, STAFF_ROLES, role_of
 
 
 class IsStaff(BasePermission):
@@ -23,3 +23,12 @@ class IsCustomer(BasePermission):
 
     def has_permission(self, request, view):
         return role_of(request.user) == CUSTOMER
+
+
+class IsOwner(BasePermission):
+    """Signed in as an owner (ADR-0020). An admin is refused too: the dashboard is the owner's."""
+
+    message = "Owners only."
+
+    def has_permission(self, request, view):
+        return role_of(request.user) == OWNER

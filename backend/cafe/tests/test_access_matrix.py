@@ -13,12 +13,12 @@ from django.urls import get_resolver, reverse
 from rest_framework.test import APIClient
 
 from cafe.models import MenuItem, Order, OrderItem, Restaurant
-from cafe.roles import ADMIN, CUSTOMER, FULFILMENT
+from cafe.roles import ADMIN, CUSTOMER, FULFILMENT, OWNER
 
 # Every test in this file touches the database.
 pytestmark = pytest.mark.django_db
 
-CALLERS = ["anonymous", "no_role", "customer", "cook_here", "cook_elsewhere", "admin"]
+CALLERS = ["anonymous", "no_role", "customer", "cook_here", "cook_elsewhere", "admin", "owner"]
 
 
 @pytest.fixture
@@ -37,6 +37,7 @@ def world(make_user, restaurant, menu_item):
             "cook_here": make_user("cook-here", FULFILMENT, restaurants=[restaurant]),
             "cook_elsewhere": make_user("cook-there", FULFILMENT, restaurants=[other]),
             "admin": make_user("boss", ADMIN, is_staff=True),
+            "owner": make_user("the-owner", OWNER),
         },
     }
 
@@ -78,6 +79,11 @@ ENDPOINTS = [
      {"anonymous": 403, "no_role": 403, "customer": 200, "cook_here": 403, "cook_elsewhere": 403, "admin": 403}),
     # Staff only
     ("fulfilment-orders", "get", lambda w: ("fulfilment-orders", [], None), STAFF_ONLY),
+    # Owner only (S35, ADR-0020): everyone else is refused, an admin and a fulfilment user included
+    ("dashboard-orders", "get", lambda w: ("dashboard-orders", [], None),
+     {"anonymous": 403, "no_role": 403, "customer": 403, "cook_here": 403, "cook_elsewhere": 403, "admin": 403, "owner": 200}),
+    ("dashboard-orders-post", "post", lambda w: ("dashboard-orders", [], {}),
+     {"anonymous": 403, "no_role": 403, "customer": 403, "cook_here": 403, "cook_elsewhere": 403, "admin": 403, "owner": 405}),
     ("order-list", "get", lambda w: ("order-list", [], None), STAFF_ONLY),
     ("order-detail", "get", lambda w: ("order-detail", [w["order"].pk], None),
      {"anonymous": 403, "no_role": 403, "customer": 403, "cook_here": 200, "cook_elsewhere": 404, "admin": 200}),
@@ -94,6 +100,13 @@ ENDPOINTS = [
     ("restaurant-create", "post", lambda w: ("restaurant-list", [], {}), dict.fromkeys(CALLERS, 405)),
     ("menuitem-delete", "delete", lambda w: ("menuitem-detail", [w["menu_item"].pk], None), dict.fromkeys(CALLERS, 405)),
 ]
+
+
+# An owner is not staff and not a customer (ADR-0020), so on every route that does not name the
+# owner it is answered as a signed-in user with no role. A row that gives the owner its own answer
+# (the dashboard list) keeps it.
+for _name, _method, _build, _expected in ENDPOINTS:
+    _expected.setdefault("owner", _expected["no_role"])
 
 
 @pytest.mark.parametrize("caller", CALLERS)
@@ -168,7 +181,7 @@ def api_route_names():
 DECIDED = {
     "health-live", "health-ready", "restaurant-list", "restaurant-detail", "restaurant-menu",
     "restaurant-cuisines", "menuitem-list", "menuitem-detail", "auth-me", "auth-login", "auth-logout", "auth-register", "my-orders", "my-orders-attach",
-    "order-lookup", "checkout-start", "checkout-capture", "assistant", "fulfilment-orders",
+    "order-lookup", "checkout-start", "checkout-capture", "assistant", "fulfilment-orders", "dashboard-orders",
     "order-list", "order-detail", "order-transition",
 }
 

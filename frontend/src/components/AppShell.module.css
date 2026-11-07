@@ -32,6 +32,9 @@
 
 .nav {
   display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  justify-content: flex-end;
   gap: var(--space-1);
   font-size: var(--text-sm);
 }

@@ -6,12 +6,12 @@ from django.core.management.base import BaseCommand
 from django.utils.text import slugify
 
 from cafe.models import Restaurant
-from cafe.roles import ADMIN, CUSTOMER, FULFILMENT
+from cafe.roles import ADMIN, CUSTOMER, FULFILMENT, OWNER
 
 
 class Command(BaseCommand):
     help = (
-        "Create demo users: one fulfilment user for each restaurant, one admin and one customer, each with a "
+        "Create demo users: one fulfilment user for each restaurant, one admin, one owner and one customer, each with a "
         "random password printed once, or all with the same password given by --password. Existing "
         "users keep their password. For local and sandbox demos only; real staff are made in the "
         "Django admin."
@@ -31,7 +31,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         User = get_user_model()
-        groups = {name: Group.objects.get_or_create(name=name)[0] for name in (FULFILMENT, ADMIN, CUSTOMER)}
+        groups = {name: Group.objects.get_or_create(name=name)[0] for name in (FULFILMENT, ADMIN, OWNER, CUSTOMER)}
         created = []
 
         def make(username, group, **extra):
@@ -48,6 +48,7 @@ class Command(BaseCommand):
             return user
 
         make("admin", ADMIN, is_staff=True)
+        make("owner", OWNER)
         make("demo-customer", CUSTOMER)
         for restaurant in Restaurant.objects.order_by("id"):
             username = f"staff-{slugify(restaurant.name)}"[:150]

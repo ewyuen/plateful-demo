@@ -199,3 +199,31 @@ class CheckoutSerializer(serializers.ModelSerializer):
 
 class CheckoutCaptureSerializer(serializers.Serializer):
     paypal_order_id = serializers.CharField(max_length=255)
+
+
+class DashboardOrderSerializer(serializers.ModelSerializer):
+    """One order as the admin dashboard lists it (S34, ADR-0019).
+
+    The fields are an explicit list on purpose: no delivery address, order code, PayPal id
+    or payer detail can appear, whatever is added to `Order` later. The customer's name is
+    the one personal detail, the same one the staff queue already shows.
+    """
+
+    restaurant_name = serializers.CharField(source="restaurant.name", read_only=True)
+    item_count = serializers.SerializerMethodField()
+    total = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Order
+        fields = (
+            "id", "restaurant", "restaurant_name", "customer_name", "status",
+            "fulfilment_type", "created_at", "item_count", "total",
+        )
+        read_only_fields = fields
+
+    def get_item_count(self, obj):
+        # Reads the prefetched items, so listing many orders makes no query per order.
+        return sum(item.quantity for item in obj.items.all())
+
+    def get_total(self, obj):
+        return f"{order_total(obj):.2f}"

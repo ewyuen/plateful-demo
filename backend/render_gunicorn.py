@@ -37,7 +37,7 @@ if demo_password:
 
     from cafe.models import Restaurant
 
-    demo_names = {"admin", "demo-customer"}
+    demo_names = {"admin", "owner", "demo-customer"}
     demo_names |= {f"staff-{slugify(restaurant.name)}"[:150] for restaurant in Restaurant.objects.all()}
     demo_users = get_user_model().objects.filter(username__in=demo_names)
     hashes = set(demo_users.values_list("password", flat=True))

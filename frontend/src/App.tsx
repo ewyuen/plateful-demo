@@ -1,9 +1,11 @@
 import './App.css'
+import { lazy, Suspense } from 'react'
 import { Route, Routes } from 'react-router'
 import type { AuthUser } from './api/types'
 import AppShell from './components/AppShell'
 import AuthProvider from './components/AuthProvider'
 import OrderDraftProvider from './components/OrderDraftProvider'
+import RequireOwner from './components/RequireOwner'
 import RequireStaff from './components/RequireStaff'
 import type { OrderDraft } from './orderDraft'
 import CheckoutPage from './pages/CheckoutPage'
@@ -15,6 +17,10 @@ import MyOrdersPage from './pages/MyOrdersPage'
 import OrdersPage from './pages/OrdersPage'
 import RegisterPage from './pages/RegisterPage'
 import RestaurantPage from './pages/RestaurantPage'
+
+// The dashboard and its grid are a separate chunk, fetched only when an admin opens it
+// (ADR-0019), so the shop's main bundle does not carry them.
+const DashboardPage = lazy(() => import('./pages/DashboardPage'))
 
 // The pages and their addresses (ADR-0016). The cart lives above the routes, so it
 // survives moving between pages; the router itself is provided by main.tsx or a test.
@@ -40,6 +46,16 @@ function App({ initialDraft, initialUser }: { initialDraft?: OrderDraft; initial
                 <RequireStaff next="/fulfilment">
                   <FulfilmentPage />
                 </RequireStaff>
+              }
+            />
+            <Route
+              path="dashboard"
+              element={
+                <RequireOwner next="/dashboard">
+                  <Suspense fallback={<p role="status">Loading the dashboard…</p>}>
+                    <DashboardPage />
+                  </Suspense>
+                </RequireOwner>
               }
             />
             <Route path="*" element={<NotFoundPage />} />

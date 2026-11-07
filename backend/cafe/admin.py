@@ -14,7 +14,7 @@ from .models import (
     OrderItem,
     Restaurant,
 )
-from .roles import ADMIN, CUSTOMER, FULFILMENT, ROLE_GROUPS, role_of
+from .roles import ADMIN, CUSTOMER, FULFILMENT, OWNER, ROLE_GROUPS, role_of
 
 User = get_user_model()
 
@@ -165,7 +165,7 @@ class StaffUserChangeForm(UserChangeForm):
     def clean_groups(self):
         groups = self.cleaned_data["groups"]
         if sum(1 for group in groups if group.name in ROLE_GROUPS) > 1:
-            raise forms.ValidationError("Choose one role: fulfilment, admin or customer.")
+            raise forms.ValidationError("Choose one role: fulfilment, admin, owner or customer.")
         return groups
 
 
@@ -186,8 +186,9 @@ class StaffUserAdmin(AdminRoleMixin, UserAdmin):
                 "fields": ("is_active", "groups", "is_staff"),
                 "description": (
                     "The role is the group: fulfilment (works for the restaurants that list "
-                    "them as staff), admin (this admin site, all restaurants) or customer (keeps "
-                    "orders under their own account). Choose at most one. Staff access follows the role."
+                    "them as staff), admin (this admin site, all restaurants), owner (the orders dashboard, "
+                    "view only) or customer (keeps orders under their own account). Choose at most one. "
+                    "Staff access follows the role."
                 ),
             },
         ),
@@ -203,6 +204,8 @@ class StaffUserAdmin(AdminRoleMixin, UserAdmin):
         names = {group.name for group in obj.groups.all()}
         if obj.is_superuser or ADMIN in names:
             return ADMIN
+        if OWNER in names:
+            return OWNER
         if FULFILMENT in names:
             return FULFILMENT
         return CUSTOMER if CUSTOMER in names else "-"

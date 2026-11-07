@@ -3,6 +3,7 @@ import type {
   AssistantMessage,
   AuthUser,
   CompletedOrder,
+  DashboardOrders,
   GuestOrder,
   AssistantReply,
   CreatedPayment,
@@ -92,6 +93,11 @@ export function listFulfilmentOrders(
   if (filters.restaurant !== undefined) query.set('restaurant', String(filters.restaurant))
   const suffix = query.size > 0 ? `?${query}` : ''
   return request<Page<Order>>(`/fulfilment/orders/${suffix}`, { signal })
+}
+
+// Every restaurant's paid orders, for the admin dashboard (admin only, S34).
+export function listDashboardOrders(signal?: AbortSignal): Promise<DashboardOrders> {
+  return request<DashboardOrders>('/dashboard/orders/', { signal })
 }
 
 // Moves an order to its next step. A step that is not allowed (often because someone else

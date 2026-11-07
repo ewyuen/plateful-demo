@@ -172,8 +172,29 @@ export interface FulfilmentFilters {
   restaurant?: number
 }
 
+// One row of the admin dashboard (S34, ADR-0019): no address, order code or payment id.
+export interface DashboardOrder {
+  id: number
+  restaurant: number
+  restaurant_name: string
+  customer_name: string
+  status: OrderStatus
+  fulfilment_type: FulfilmentType
+  created_at: string
+  item_count: number
+  // Items plus the delivery fee, worked out by the server, two decimals.
+  total: string
+}
+
+// The dashboard list: at most 1000 of the newest orders, `count` says how many exist.
+export interface DashboardOrders {
+  count: number
+  truncated: boolean
+  results: DashboardOrder[]
+}
+
 // Login (ADR-0014). `role` is null for an account that may use neither the staff pages nor My orders.
-export type AuthRole = 'fulfilment' | 'admin' | 'customer'
+export type AuthRole = 'fulfilment' | 'admin' | 'owner' | 'customer'
 
 export interface AuthUser {
   username: string

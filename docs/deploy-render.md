@@ -79,7 +79,7 @@ There is deliberately no rule for `/admin`: Render drops the trailing slash when
 
 ## Demo accounts
 
-`staff-corner-kitchen` (and one `staff-<restaurant>` for each starter restaurant), `demo-customer` and `admin`, all with the sandbox password you set in `DEMO_PASSWORD` (`Password1` on the hosted copy, the same as the Compose guide). Staff and customers sign in at `/login` on the page. The Django admin is at the API's own address, `https://<api>.onrender.com/admin/`. At every start the demo accounts are set to `DEMO_PASSWORD` (the seed command alone never changes an existing user's password); no other account is touched, and the starter restaurants and menu are reloaded. Orders and accounts created on the site are kept.
+`staff-corner-kitchen` (and one `staff-<restaurant>` for each starter restaurant), `demo-customer`, `owner` and `admin`, all with the sandbox password you set in `DEMO_PASSWORD` (`Password1` on the hosted copy, the same as the Compose guide). Staff, the owner and customers sign in at `/login` on the page; the owner lands on the Dashboard (every restaurant's paid orders, view only) and an admin on the Fulfilment page. The Django admin is at the API's own address, `https://<api>.onrender.com/admin/`. At every start the demo accounts are set to `DEMO_PASSWORD` (the seed command alone never changes an existing user's password); no other account is touched, and the starter restaurants and menu are reloaded. Orders and accounts created on the site are kept.
 
 ## Check that it works
 
@@ -89,7 +89,7 @@ curl -s -o /dev/null -w '%{http_code}\n' $WEB/api/health/live/     # 200 (the fi
 curl -s $WEB/api/restaurants/ | head -c 200                         # the starter restaurants
 ```
 
-Then, in a private window, choose a restaurant, add a dish, check out as the sandbox buyer and see "Payment received" with an order code; sign in at `/login` as `staff-corner-kitchen` and open the staff queue (by default it shows active orders only; a completed order drops out). A wrong login must answer `400` with a JSON message, not a CSRF 403:
+Then, in a private window, choose a restaurant, add a dish, check out as the sandbox buyer and see "Payment received" with an order code; sign in at `/login` as `staff-corner-kitchen` and open the staff queue (by default it shows active orders only; a completed order drops out). Sign in as `owner` and the Dashboard shows the order you just made. A wrong login must answer `400` with a JSON message, not a CSRF 403:
 
 ```bash
 jar=$(mktemp); curl -s -o /dev/null -c "$jar" $WEB/api/auth/me/; tok=$(awk '$6=="csrftoken"{print $7}' "$jar")
