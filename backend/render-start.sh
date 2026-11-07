@@ -1,7 +1,7 @@
 #!/bin/sh
 # Start script for the Render deployment (see Dockerfile.render and docs/deploy-render.md).
 # Free Render services have no pre-deploy step and no shell, so the database is prepared here.
-# Every step is safe to repeat: a restart changes nothing that already exists.
+# The database steps themselves run in render_gunicorn.py; each is safe to repeat.
 set -eu
 
 # The database comes from one connection string: NEON_DATABASE_URL when it is set (after the move to
@@ -31,12 +31,6 @@ PY
 export DJANGO_ALLOWED_HOSTS="${RENDER_EXTERNAL_HOSTNAME:-localhost},localhost"
 export CSRF_TRUSTED_ORIGINS="${RENDER_EXTERNAL_URL:-http://localhost:8000}"
 
-python manage.py migrate --noinput
-python manage.py loaddata seed
-if [ -n "${DEMO_PASSWORD:-}" ]; then
-  python manage.py seed_demo_users --password "$DEMO_PASSWORD"
-else
-  python manage.py seed_demo_users
-fi
-
-exec gunicorn config.wsgi:application --bind "0.0.0.0:${PORT:-8000}" --workers 2 --access-logfile -
+# Preparing the database and warming the app happen once, in render_gunicorn.py (see why there). One worker
+# (Render sets WEB_CONCURRENCY=1), the app loaded in the master (--preload), and a generous timeout.
+exec gunicorn config.wsgi:application --config /app/render_gunicorn.py --bind "0.0.0.0:${PORT:-8000}" --workers "${WEB_CONCURRENCY:-1}" --preload --timeout 120 --access-logfile -
