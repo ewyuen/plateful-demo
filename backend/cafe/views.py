@@ -21,7 +21,7 @@ from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 
 from . import assistant, codes, paypal, workflow
-from .permissions import IsCustomer, IsStaff
+from .permissions import IsCustomer, IsOwner, IsStaff
 from .pricing import total_for
 from .roles import CUSTOMER, restaurants_of, role_of
 from .models import (
@@ -37,6 +37,7 @@ from .serializers import (
     CheckoutCaptureSerializer,
     CheckoutSerializer,
     CompletedOrderSerializer,
+    DashboardOrderSerializer,
     GuestOrderSerializer,
     MenuItemSerializer,
     OrderSerializer,
@@ -536,3 +537,38 @@ def ready(request):
     except DatabaseError:
         return Response({"status": "unavailable"}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
     return Response({"status": "ok"})
+
+
+# The most orders the dashboard returns; past this it says so (`truncated`).
+DASHBOARD_LIMIT = 1000
+
+
+class DashboardOrderList(APIView):
+    """Every restaurant's paid orders for the dashboard (S34, ADR-0019; owner only since S35, ADR-0020).
+
+    Owner only (an admin is refused) and read-only (GET is the only method). Newest first, every status but
+    pending, at most DASHBOARD_LIMIT of them; `count` says how many exist and `truncated`
+    whether the list was cut. The number of queries does not depend on the number of orders.
+    """
+
+    permission_classes = [IsOwner]
+
+    def get(self, request):
+        queryset = Order.objects.filter(
+            status__in=[str(s.value) for s in workflow.QUEUE_STATUSES]
+        )
+        count = queryset.count()
+        orders = (
+            queryset.select_related("restaurant")
+            .prefetch_related(
+                Prefetch("items", queryset=OrderItem.objects.select_related("menu_item"))
+            )
+            .order_by("-created_at", "-id")[:DASHBOARD_LIMIT]
+        )
+        return Response(
+            {
+                "count": count,
+                "truncated": count > DASHBOARD_LIMIT,
+                "results": DashboardOrderSerializer(orders, many=True).data,
+            }
+        )

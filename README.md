@@ -21,7 +21,7 @@ Plateful is a marketplace of restaurants. A customer browses by cuisine, opens a
 - **Pay with PayPal (sandbox).** The server works out the total, delivery fee included, from the prices in its database and creates the PayPal order for exactly that amount. **An order exists only once its payment has been captured**: there is no unpaid order to clean up.
 - **Pickup or delivery,** per restaurant, with the delivery fee added on the server.
 - **No account needed to order.** After paying, a guest gets an **order code** (12 characters) and can find the order later with it. The lookup shows what was ordered, never the name or the address. A customer who wants their orders together can register and keep them under "My orders".
-- **Restaurant staff** sign in to see only the orders of their own restaurant and move them along (confirmed, preparing, ready, out for delivery, completed, or cancelled). An **admin** manages restaurants, menus, delivery settings, users and roles in the Django admin.
+- **Restaurant staff** sign in to see only the orders of their own restaurant and move them along (confirmed, preparing, ready, out for delivery, completed, or cancelled). An **admin** manages restaurants, menus, delivery settings, users and roles in the Django admin. The **owner** (the boss) signs in at the normal login page and sees a **Dashboard** of every restaurant's paid orders: view only, no order buttons.
 
 ## How it uses PayPal and Claude
 
@@ -68,13 +68,13 @@ The quickest way to run the whole app on one machine: the database, the API, the
 
    The first build takes a couple of minutes. When the log settles, open **http://localhost:8080**.
 
-5. **Optional: demo staff, admin and customer logins.** A guest can browse, pay and look an order up without any account. To try the restaurant staff queue, the admin site and a customer account, create the demo users once, all with the same password `Password1`:
+5. **Optional: demo staff, admin, owner and customer logins.** A guest can browse, pay and look an order up without any account. To try the restaurant staff queue, the admin site, the owner's dashboard and a customer account, create the demo users once, all with the same password `Password1`:
 
    ```bash
    docker compose exec backend python manage.py seed_demo_users --password Password1
    ```
 
-   It creates `admin`, `demo-customer` and one `staff-<restaurant>` user per restaurant (for example `staff-corner-kitchen`), each with the password **`Password1`**. A fixed password is for this local demo only: without `--password` the command gives each user a random one, printed once. Running it again changes no existing password; to set them all to `Password1` again, add `--reset-passwords`.
+   It creates `admin`, `owner`, `demo-customer` and one `staff-<restaurant>` user per restaurant (for example `staff-corner-kitchen`), each with the password **`Password1`**. A fixed password is for this local demo only: without `--password` the command gives each user a random one, printed once. Running it again changes no existing password; to set them all to `Password1` again, add `--reset-passwords`.
 
 **Check that it works:**
 
@@ -84,6 +84,7 @@ The quickest way to run the whole app on one machine: the database, the API, the
 - [ ] Open **Orders**, enter the code under **Find your order**, and see the order with its items, total and status. (Anyone with the code can see what was ordered, but not the name or address.)
 - [ ] With the demo users (step 5): sign in at **http://localhost:8080/login** as the staff user of the restaurant you ordered from (for example `staff-corner-kitchen`) and see the paid order in the **Fulfilment** queue. Move it forward a step; refresh the guest's Orders page to see the new status.
 - [ ] Sign in at **http://localhost:8080/admin/** as `admin` to see the Django admin (restaurants, menus, orders, users).
+- [ ] Sign in at **http://localhost:8080/login** as `owner`: you land on the **Dashboard**, a sortable table of the paid orders of every restaurant with a totals line (view only; the owner has no Fulfilment page and no admin site). The `admin` account does not see the dashboard.
 - [ ] Sign in as `demo-customer` and open **My orders**.
 
 **Stop and reset:** `docker compose down` stops it and keeps your orders; `docker compose down -v` also deletes them, so the next start has only the starter restaurants. After changing `PAYPAL_CLIENT_ID`, run `docker compose up --build` again, because the page has it built in.
@@ -96,6 +97,7 @@ The quickest way to run the whole app on one machine: the database, the API, the
 | "Payment is unavailable" | The PayPal keys are empty in `.env`. |
 | "The assistant is not available" | `ANTHROPIC_API_KEY` is empty, or the key is invalid. |
 | Signing in says it failed, or the browser shows "CSRF verification failed" | You opened the page at an address other than `http://localhost:8080` (or `127.0.0.1`). Compose trusts only the proxy's own port; if you set `PROXY_PORT`, use that port. |
+| A code change does not show up (for example the Dashboard tab for the owner is missing after a pull) | Plain `docker compose up` reuses the old images, and the page is baked into the frontend image. Run `docker compose up --build`. |
 | The demo users do not exist, or `Password1` is refused | Run step 5. The users are not created by default; if they were created without `--password`, run it again with `--password Password1 --reset-passwords`. |
 | Starting over from nothing | `docker compose down -v`, then `docker compose up --build`. |
 
@@ -113,7 +115,7 @@ export PAYPAL_CLIENT_ID=... PAYPAL_CLIENT_SECRET=...   # your PayPal sandbox key
 export ANTHROPIC_API_KEY=...                           # optional: without it the assistant says it is unavailable
 env -u VIRTUAL_ENV uv run python manage.py migrate
 env -u VIRTUAL_ENV uv run python manage.py loaddata seed          # the demo restaurants and menus (safe to repeat)
-env -u VIRTUAL_ENV uv run python manage.py seed_demo_users --password Password1   # optional: admin, staff and customer logins, all with Password1
+env -u VIRTUAL_ENV uv run python manage.py seed_demo_users --password Password1   # optional: admin, owner, staff and customer logins, all with Password1
 env -u VIRTUAL_ENV uv run python manage.py runserver
 ```
 
@@ -139,7 +141,8 @@ Who does what, once it is running at http://localhost:8080. The demo accounts co
 | **Guest, later** | none | Open **Orders** and enter the code under **Find your order** | The order's items, total and status. Never the name or the address, so a code can be shared safely |
 | **Customer** | `demo-customer`, or **Register** | Keep orders together: find an order by its code and press **Add to my account**, then see all of them under **My orders** | The orders of that customer only |
 | **Restaurant staff** | `staff-<restaurant>`, for example `staff-corner-kitchen` | Open **Fulfilment**: the queue of paid orders of **their own restaurant only**, updated every few seconds. Move an order along (confirmed, preparing, ready, then completed, or out for delivery for a delivery order), or cancel it | A new paid order appears in the queue; after a step, the guest's **Orders** page shows the new status |
-| **Admin** | `admin` | Sign in at `/admin/` (the Django admin): manage restaurants, menus, delivery settings, orders, users and roles | The admin site. Staff and customers are refused there |
+| **Admin** | `admin` | Sign in at `/admin/` (the Django admin): manage restaurants, menus, delivery settings, orders, users and roles. At the normal login page an admin lands on **Fulfilment** | The admin site. Staff, owners and customers are refused there |
+| **Owner** (the boss) | `owner` | Sign in at the normal login page and open the **Dashboard**: every restaurant's paid orders in one table that sorts, filters and searches, with a totals line that follows the filters (the Order column stays in view; it refreshes every 15 seconds) | The table and the totals. No buttons that change an order, no Fulfilment page and no admin site; the admin does not see the dashboard either |
 
 Some things worth trying: pick a restaurant that offers delivery and choose **Delivery** (an address is asked for and the fee is added to the total that PayPal charges); ask the assistant for something it cannot know ("a dish that is not on the menu") and see that it only suggests real dishes; add dishes from one restaurant and then start a cart at another (the page asks before it replaces the cart).
 

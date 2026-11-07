@@ -40,6 +40,14 @@ def admin_api(make_user):
 
 
 @pytest.fixture
+def owner_api(make_user):
+    """A client signed in as an owner: the one role that may read the orders dashboard (ADR-0020)."""
+    client = APIClient()
+    client.force_authenticate(make_user("an-owner", "owner"))
+    return client
+
+
+@pytest.fixture
 def restaurant():
     return Restaurant.objects.create(name="Corner Kitchen", address="1 Main St")
 

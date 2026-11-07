@@ -2,7 +2,7 @@ import { useId, useState, type FormEvent } from 'react'
 import { Link, Navigate, useSearchParams } from 'react-router'
 import { ApiError } from '../api/client'
 import { useAuth } from '../authContext'
-import { isCustomer } from '../roles'
+import { isCustomer, isOwner } from '../roles'
 import styles from './LoginPage.module.css'
 
 export const WRONG_CREDENTIALS = 'The username or password is wrong.'
@@ -35,9 +35,10 @@ function LoginPage() {
   const errorId = useId()
   const next = safeNext(params.get('next'))
 
-  // Staff go to the queue and a customer to their orders, unless they came from another page.
+  // An owner goes to the dashboard, staff (fulfilment and admin) to the queue and a customer to their
+  // orders, unless they came from another page.
   if (state.user !== null && state.user.role !== null) {
-    return <Navigate to={next ?? (isCustomer(state.user) ? '/my-orders' : '/fulfilment')} replace />
+    return <Navigate to={next ?? (isCustomer(state.user) ? '/my-orders' : isOwner(state.user) ? '/dashboard' : '/fulfilment')} replace />
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {

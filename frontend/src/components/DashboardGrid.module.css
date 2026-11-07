@@ -1,0 +1,50 @@
+.wrap {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+/* The table scrolls inside this box, so the page itself never scrolls sideways. */
+.grid {
+  width: 100%;
+  min-width: 0;
+  height: 32rem;
+  overflow: hidden;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-sm);
+}
+
+.tag {
+  display: inline-flex;
+  padding: 1px var(--space-2);
+  border: 2px solid var(--color-gold-text);
+  border-radius: var(--radius-sm);
+  color: var(--color-gold-text);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.tagDone {
+  border-color: var(--color-success);
+  color: var(--color-success);
+}
+
+.tagCancelled {
+  border-color: var(--color-text-muted);
+  color: var(--color-text-muted);
+}
+
+.totals {
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-gold);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+}
+
+.note {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}

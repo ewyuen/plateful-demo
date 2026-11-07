@@ -96,6 +96,10 @@ export function anAdmin(overrides: Partial<AuthUser> = {}): AuthUser {
   return { username: 'boss', role: 'admin', restaurants: [], ...overrides }
 }
 
+export function anOwner(overrides: Partial<AuthUser> = {}): AuthUser {
+  return { username: 'the-owner', role: 'owner', restaurants: [], ...overrides }
+}
+
 export function aCook(overrides: Partial<AuthUser> = {}): AuthUser {
   return {
     username: 'cook',

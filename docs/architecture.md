@@ -92,7 +92,9 @@ A one-command, disposable demo deployment on AWS (a cluster created for a demo a
 | ADR-0011 | PayPal sandbox checkout: the server computes the amount, creates and captures the order, and an order exists only after capture |
 | ADR-0012 | The Claude menu assistant: suggestions are validated against the real menu |
 | ADR-0013 | Planned: deploy to AWS (EKS) for a demo, then delete the cluster |
-| ADR-0014 | Roles (fulfilment, admin) as Django groups with session login; guests need no account and use an order code; permissions enforced in the API |
+| ADR-0014 | Roles (fulfilment, admin, owner, customer) as Django groups with session login; guests need no account and use an order code; permissions enforced in the API (the owner role was added by ADR-0020) |
 | ADR-0015 | Delivery at checkout (address and fee in the server-side total) and an order workflow for fulfilment |
 | ADR-0016 | A marketplace of restaurants, menu categories, page routes, one cart per restaurant |
 | ADR-0017 | Two deploy modes (local and, planned, disposable AWS) from one command, with shared manifests |
+| ADR-0019 | An orders dashboard with AG Grid Community: its own read-only endpoint (capped at 1000, no private details), a lazy-loaded page, view only |
+| ADR-0020 | A separate read-only `owner` role (a fourth group made by a data migration, not staff, so the API refuses order moves): the dashboard is for the owner only |

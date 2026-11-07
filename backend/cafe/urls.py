@@ -6,6 +6,7 @@ from .views import (
     AssistantView,
     CheckoutCaptureView,
     CheckoutStartView,
+    DashboardOrderList,
     FulfilmentOrderList,
     MenuItemViewSet,
     MyOrdersAttachView,
@@ -37,5 +38,6 @@ urlpatterns = [
     path("checkout/paypal/create/", CheckoutStartView.as_view(), name="checkout-start"),
     path("checkout/paypal/capture/", CheckoutCaptureView.as_view(), name="checkout-capture"),
     path("fulfilment/orders/", FulfilmentOrderList.as_view(), name="fulfilment-orders"),
+    path("dashboard/orders/", DashboardOrderList.as_view(), name="dashboard-orders"),
     path("", include(router.urls)),
 ]

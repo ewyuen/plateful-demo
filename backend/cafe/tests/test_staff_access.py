@@ -437,11 +437,11 @@ def passwords_in(text):
     return dict(line.split() for line in text.splitlines() if line.startswith("  "))
 
 
-def test_the_seed_creates_staff_for_each_restaurant_and_an_admin(restaurant, noodle_bar):
+def test_the_seed_creates_staff_for_each_restaurant_an_admin_and_an_owner(restaurant, noodle_bar):
     printed = passwords_in(run_seed())
     users = get_user_model().objects
 
-    assert set(printed) == {"admin", "demo-customer", "staff-corner-kitchen", "staff-noodle-bar"}
+    assert set(printed) == {"admin", "owner", "demo-customer", "staff-corner-kitchen", "staff-noodle-bar"}
     assert role_of(users.get(username="admin")) == ADMIN
     assert list(users.get(username="staff-corner-kitchen").staffed_restaurants.all()) == [restaurant]
     assert list(users.get(username="staff-noodle-bar").staffed_restaurants.all()) == [noodle_bar]
@@ -450,7 +450,7 @@ def test_the_seed_creates_staff_for_each_restaurant_and_an_admin(restaurant, noo
 def test_the_password_option_gives_every_demo_user_the_same_password(restaurant):
     printed = passwords_in(run_seed("--password", "Password1"))
 
-    assert set(printed) == {"admin", "demo-customer", "staff-corner-kitchen"}
+    assert set(printed) == {"admin", "owner", "demo-customer", "staff-corner-kitchen"}
     assert set(printed.values()) == {"Password1"}
     users = get_user_model().objects
     assert all(users.get(username=name).check_password("Password1") for name in printed)
