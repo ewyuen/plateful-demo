@@ -26,10 +26,18 @@ for key, value in pieces:
     print("export %s=%s" % (key, shlex.quote(str(value))))
 PY
 )"
+# Never fall back to SQLite by accident: without these the settings would ignore Postgres.
+if [ -z "${POSTGRES_DB:-}" ] || [ -z "${POSTGRES_HOST:-}" ]; then
+  echo "render-start: could not read the database address from the connection string" >&2
+  exit 1
+fi
 
-# The address Render gave the service (Django checks the Host header and the CSRF origin).
-export DJANGO_ALLOWED_HOSTS="${RENDER_EXTERNAL_HOSTNAME:-localhost},localhost"
-export CSRF_TRUSTED_ORIGINS="${RENDER_EXTERNAL_URL:-http://localhost:8000}"
+# The addresses Django must trust (the Host header, and the CSRF origin of the page's form posts):
+# the API's own address, and PUBLIC_ORIGIN, the address the browser uses when the page is a separate
+# Render static site that forwards /api and /admin here (for example https://plateful-web.onrender.com).
+public_host="${PUBLIC_ORIGIN#*://}"
+export DJANGO_ALLOWED_HOSTS="${RENDER_EXTERNAL_HOSTNAME:-localhost},${public_host:-localhost},localhost"
+export CSRF_TRUSTED_ORIGINS="${RENDER_EXTERNAL_URL:-http://localhost:8000},${PUBLIC_ORIGIN:-http://localhost:8000}"
 
 # Preparing the database and warming the app happen once, in render_gunicorn.py (see why there). One worker
 # (Render sets WEB_CONCURRENCY=1), the app loaded in the master (--preload), and a generous timeout.
