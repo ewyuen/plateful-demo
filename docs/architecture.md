@@ -69,6 +69,7 @@ Vite, React and TypeScript.
 
 - **Docker Compose** (`docker-compose.yml`, `compose/proxy.conf`): database, backend, frontend and the proxy, started with one command. The proxy routes `/api`, `/admin` and `/static/` to the backend and everything else to the frontend; the backend trusts the proxy's origin for CSRF.
 - **minikube** (`k8s/`, `scripts/plateful`): `k8s/base` holds what every deployment shares (namespace, ConfigMap, Postgres StatefulSet, backend and frontend Deployments, a migration Job, a purge CronJob for stale checkout drafts and the Ingress); `k8s/overlays/local` sets the host name. `scripts/plateful deploy local` builds the images, applies the manifests in three steps (database, migrations, applications), seeds the demo users and checks that payments are configured; `delete local` removes everything it created.
+- **Render** (a free hosted copy, with the database moving to an external Postgres later): the page is a static site whose rewrite forwards `/api` to a Docker web service built from `backend/Dockerfile.render`, so the browser sees one origin. How it is set up, its limits and the database move: [docs/deploy-render.md](deploy-render.md).
 
 ## Next
 

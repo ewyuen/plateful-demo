@@ -4,11 +4,11 @@
 # The database steps themselves run in render_gunicorn.py; each is safe to repeat.
 set -eu
 
-# The database comes from one connection string: NEON_DATABASE_URL when it is set (after the move to
-# Neon), otherwise DATABASE_URL (Render's own database). The settings read the pieces, so split it.
-url="${NEON_DATABASE_URL:-${DATABASE_URL:-}}"
+# The database comes from one connection string: EXTERNAL_DATABASE_URL when it is set (after the move to an
+# external Postgres), otherwise DATABASE_URL (Render's own database). The settings read the pieces, so split it.
+url="${EXTERNAL_DATABASE_URL:-${DATABASE_URL:-}}"
 if [ -z "$url" ]; then
-  echo "render-start: set DATABASE_URL or NEON_DATABASE_URL" >&2
+  echo "render-start: set DATABASE_URL or EXTERNAL_DATABASE_URL" >&2
   exit 1
 fi
 eval "$(DB_URL="$url" python - <<'PY'
