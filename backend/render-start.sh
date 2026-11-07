@@ -35,9 +35,10 @@ fi
 # The addresses Django must trust (the Host header, and the CSRF origin of the page's form posts):
 # the API's own address, and PUBLIC_ORIGIN, the address the browser uses when the page is a separate
 # Render static site that forwards /api and /admin here (for example https://plateful-web.onrender.com).
-public_host="${PUBLIC_ORIGIN#*://}"
+public_origin="${PUBLIC_ORIGIN:-}"   # unset until the page's address is known (set -u would stop on it)
+public_host="${public_origin#*://}"
 export DJANGO_ALLOWED_HOSTS="${RENDER_EXTERNAL_HOSTNAME:-localhost},${public_host:-localhost},localhost"
-export CSRF_TRUSTED_ORIGINS="${RENDER_EXTERNAL_URL:-http://localhost:8000},${PUBLIC_ORIGIN:-http://localhost:8000}"
+export CSRF_TRUSTED_ORIGINS="${RENDER_EXTERNAL_URL:-http://localhost:8000},${public_origin:-http://localhost:8000}"
 
 # Preparing the database and warming the app happen once, in render_gunicorn.py (see why there). One worker
 # (Render sets WEB_CONCURRENCY=1), the app loaded in the master (--preload), and a generous timeout.
