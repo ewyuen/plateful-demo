@@ -4,8 +4,6 @@
 
 Plateful is a marketplace of restaurants. A customer browses by cuisine, opens a menu, and can ask a Claude-powered assistant for a recommendation ("something light"). The assistant's suggestions go into the cart, the customer pays with PayPal, and the restaurant's staff see the paid order and move it from the kitchen to the door. It was built for the [PayPal AI Hackathon](https://paypalaihackathon.devpost.com/).
 
-**Demo video (2 min 41 s):** [Plateful: order with an AI assistant and pay with PayPal](https://youtu.be/VXHrRsa8IpQ)
-
 **Try it in five minutes:** [Run it with Docker Compose](#run-it-docker-compose). You need Docker and your own free PayPal sandbox keys; a Claude key is optional.
 
 ![Discover restaurants on a desktop](docs/screenshots/1-home.png)
