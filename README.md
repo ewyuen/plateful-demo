@@ -14,6 +14,10 @@ Plateful is a marketplace of restaurants. A customer browses by cuisine, opens a
 
 ![A restaurant's menu on a phone, with the cart bar](docs/screenshots/5-phone.png)
 
+![The owner's dashboard: every restaurant's paid orders in one AG Grid table, with a totals line](docs/screenshots/8-owner-dashboard.png)
+
+![The dashboard on a phone, with the Order column kept in view](docs/screenshots/9-owner-dashboard-phone.png)
+
 ## What it does
 
 - **Browse.** Search restaurants and filter by cuisine; each restaurant has a menu grouped by category. The cart survives a page refresh.
